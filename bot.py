@@ -1,4 +1,4 @@
-# bot.py - Complete High-Performance Bot with Concurrency, Auto-Clean, Log Group & Interactive Buttons
+# bot.py - Complete High-Performance Bot with Custom Poriot_ke- Code Prefix
 
 import sys, asyncio, os, time, random, re, json, string, hashlib
 from datetime import datetime, timedelta
@@ -21,7 +21,7 @@ BOT_TOKEN = "8766173350:AAFGjUBKnzhxRBscbznll22roBySzQ02HOA"
 OWNER_ID = 5541778617
 LOG_GROUP_ID = -1004409181577
 OWNER_USERNAME = "@Poriot_ke"
-BOT_BRAND, DEV_LINE = "✨ SHOPIFY CHECKER", f"🔱 Developed by {@Poriot_ke}"
+BOT_BRAND, DEV_LINE = "✨ SHOPIFY CHECKER", f"🔱 Developed by {OWNER_USERNAME}"
 PREMIUM_FILE, PROXY_FILE, USER_PROXY_FILE = "premium.txt", "proxy.txt", "user_proxy.json"
 CODES_FILE = "codes.json"
 PREMIUM_USERS_FILE = "premium_users.json"
@@ -126,9 +126,10 @@ def get_premium_days_left(user_id):
         return max(0, days)
     return 0
 
-# ========== CODE SYSTEM ==========
+# ========== CODE SYSTEM WITH PORIOT_KE- PREFIX ==========
 def generate_code():
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    raw_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    return f"Poriot_ke-{raw_code}"
 
 def load_codes():
     try:
@@ -161,9 +162,18 @@ def create_codes(count, days=1):
     return new_codes
 
 def redeem_code(code, user_id):
+    code = code.strip()
+    # Normalize case check for prefix
+    if not code.upper().startswith("PORIOT_KE-"):
+        code = f"Poriot_ke-{code}"
+    else:
+        # Standardize prefix formatting
+        parts = code.split("-", 1)
+        code = f"Poriot_ke-{parts[1].upper()}"
+        
     codes = load_codes()
     if code not in codes:
-        return False, "❌ Invalid code!"
+        return False, f"❌ Invalid code! Use format: <code>Poriot_ke-XXXXXXXX</code>"
     
     code_data = codes[code]
     expiry = datetime.fromisoformat(code_data['expiry'])
@@ -392,7 +402,7 @@ async def setup_bot_commands():
                 BotCommand('chkproxy', 'Test proxies and discard dead ones'),
                 BotCommand('setproxy', 'Set proxy: /setproxy ip:port'),
                 BotCommand('clearuserproxy', 'Clear your personal proxies'),
-                BotCommand('redeem', 'Redeem premium code: /redeem CODE'),
+                BotCommand('redeem', 'Redeem premium code: /redeem Poriot_ke-CODE'),
                 BotCommand('help', 'Show help information')
             ]
         ))
@@ -562,15 +572,15 @@ async def redeem_code_cmd(e):
         uid = e.sender_id
         parts = e.message.text.split()
         if len(parts) < 2:
-            await e.reply("Usage: /redeem [code]")
+            await e.reply("Usage: /redeem Poriot_ke-[CODE]")
             return
-        code = parts[1].strip().upper()
+        code = parts[1].strip()
         success, msg = redeem_code(code, uid)
         if success:
             days = get_premium_days_left(uid)
-            await e.reply(f"🎉 {msg} (Days left: {days})")
+            await e.reply(f"🎉 {msg} (Days left: {days})", parse_mode='html')
         else:
-            await e.reply(f"❌ {msg}")
+            await e.reply(f"{msg}", parse_mode='html')
     except Exception as ex:
         await e.reply(f"Error: {ex}")
 
@@ -580,7 +590,7 @@ async def cb(e):
         uid, data = e.sender_id, e.data.decode()
         if data not in ["back_start", "admin_panel", "admin_users", "admin_proxy", "admin_codes", "close"]:
             if not is_admin(uid) and not is_premium(uid):
-                await e.answer("❌ Premium Required!\nUse /redeem [code]", alert=True)
+                await e.answer("❌ Premium Required!\nUse /redeem Poriot_ke-CODE", alert=True)
                 return
         
         if data == "gates":
@@ -745,7 +755,7 @@ async def help_cmd(e):
 ║  /msh (or send .txt file)  ║
 ║  /chkproxy (clean proxies) ║
 ║  /setproxy ip:port         ║
-║  /redeem [code]            ║
+║  /redeem Poriot_ke-[code]  ║
 ╚════════════════════════════╝
 {DEV_LINE}""", parse_mode='html')
 
@@ -857,7 +867,7 @@ async def run_mass_check(e, content):
 async def txt_upload_handler(e):
     uid = e.sender_id
     if not is_admin(uid) and not is_premium(uid):
-        await e.reply("❌ Premium Required!\nUse /redeem [code]")
+        await e.reply("❌ Premium Required!\nUse /redeem Poriot_ke-CODE")
         return
     fp = await e.message.download_media()
     async with aiofiles.open(fp, 'r', encoding='utf-8', errors='ignore') as f:
@@ -869,7 +879,7 @@ async def txt_upload_handler(e):
 async def msh_command_handler(e):
     uid = e.sender_id
     if not is_admin(uid) and not is_premium(uid):
-        await e.reply("❌ Premium Required!\nUse /redeem [code]")
+        await e.reply("❌ Premium Required!\nUse /redeem Poriot_ke-CODE")
         return
     
     content = ""
