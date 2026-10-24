@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.session
+*.session-journal
+codes.json
+premium_users.json
+user_proxy.json
+admin_ids.json
+proxy.txt
+premium.txt
